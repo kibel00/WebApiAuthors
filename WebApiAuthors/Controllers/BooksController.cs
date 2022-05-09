@@ -17,7 +17,15 @@ namespace WebApiAuthors.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Book>> Get(int id)
         {
-            return await context.Book.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+            var book = await context.Book.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+            if (book == null) { return NotFound(); }
+            return book;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Book>>> Get()
+        {
+            return await context.Book.Include(x => x.Author).ToListAsync();
         }
         [HttpPost]
         public async Task<ActionResult> Post(Book book)
@@ -27,7 +35,7 @@ namespace WebApiAuthors.Controllers
             context.Add(book);
             await context.SaveChangesAsync();
             return Ok(book);
-        } 
+        }
 
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Book>> Put(Book book, int id)
