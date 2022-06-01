@@ -31,6 +31,8 @@ namespace WebApiAuthors
 
             services.AddResponseCaching();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+            services.AddAutoMapper(typeof(Startup));
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

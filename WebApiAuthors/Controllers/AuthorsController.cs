@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
-using WebApiAuthors.Filters;
 
 namespace WebApiAuthors.Controllers
 {
@@ -11,11 +12,13 @@ namespace WebApiAuthors.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly ILogger<AuthorsController> logger;
+        private readonly IMapper mapper;
 
-        public AuthorsController(ApplicationDbContext context, ILogger<AuthorsController> logger)
+        public AuthorsController(ApplicationDbContext context, ILogger<AuthorsController> logger, IMapper mapper)
         {
             this.context = context;
             this.logger = logger;
+            this.mapper = mapper;
         }
         [HttpGet("Autores")]
         [HttpGet("/Autores")]
@@ -48,16 +51,17 @@ namespace WebApiAuthors.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> Post(Author author)
+        public async Task<ActionResult> Post(CreationAuthorDTO creationAuthorDTO)
         {
-            var exist = await context.Authors.AnyAsync(x => x.Name == author.Name);
+            var exist = await context.Authors.AnyAsync(x => x.Name == creationAuthorDTO.Name);
             if (exist)
             {
-                return BadRequest($"this author {author.Name} already exist");
+                return BadRequest($"this author {creationAuthorDTO.Name} already exist");
             }
-            context.Add(author);
+            var authors = mapper.Map<Author>(creationAuthorDTO);
+            context.Add(authors);
             await context.SaveChangesAsync();
-            return Ok(author);
+            return Ok(creationAuthorDTO);
         }
 
         [HttpPut("{id:int}")]
