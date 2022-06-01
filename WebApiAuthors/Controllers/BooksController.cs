@@ -14,28 +14,28 @@ namespace WebApiAuthors.Controllers
         {
             this.context = context;
         }
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<Book>> Get(int id)
-        {
-            var book = await context.Book.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
-            if (book == null) { return NotFound(); }
-            return book;
-        }
+        //[HttpGet("{id:int}")]
+        //public async Task<ActionResult<Book>> Get(int id)
+        //{
+        //    var book = await context.Book.Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+        //    if (book == null) { return NotFound(); }
+        //    return book;
+        //}
 
-        [HttpGet]
-        public async Task<ActionResult<List<Book>>> Get()
-        {
-            return await context.Book.Include(x => x.Author).ToListAsync();
-        }
-        [HttpPost]
-        public async Task<ActionResult> Post(Book book)
-        {
-            var authorExist = await context.Book.Include(x => x.Author).AnyAsync(x => x.AuthorId == book.AuthorId);
-            if (!authorExist) { return BadRequest($"No existe el autor del Id igual {book.AuthorId}"); }
-            context.Add(book);
-            await context.SaveChangesAsync();
-            return Ok(book);
-        }
+        //[HttpGet]
+        //public async Task<ActionResult<List<Book>>> Get()
+        //{
+        //    return await context.Book.Include(x => x.Author).ToListAsync();
+        //}
+        //[HttpPost]
+        //public async Task<ActionResult> Post(Book book)
+        //{
+        //    var authorExist = await context.Book.Include(x => x.Author).AnyAsync(x => x.AuthorId == book.AuthorId);
+        //    if (!authorExist) { return BadRequest($"No existe el autor del Id igual {book.AuthorId}"); }
+        //    context.Add(book);
+        //    await context.SaveChangesAsync();
+        //    return Ok(book);
+        //}
 
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Book>> Put(Book book, int id)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.Entities;
+using WebApiAuthors.Filters;
 
 namespace WebApiAuthors.Controllers
 {
@@ -22,13 +23,13 @@ namespace WebApiAuthors.Controllers
         public async Task<ActionResult<List<Author>>> Get()
         {
             logger.LogInformation("Getting authors");
-            return await context.Authors.Include(x => x.Books).ToListAsync();
+            return await context.Authors.ToListAsync();
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Author>> Get(int id)
         {
-            var author = await context.Authors.Include(x => x.Books).SingleOrDefaultAsync(x => x.Id == id);
+            var author = await context.Authors.SingleOrDefaultAsync(x => x.Id == id);
             if (author == null)
             {
                 return NotFound();
@@ -39,7 +40,7 @@ namespace WebApiAuthors.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Author>> Get(string name)
         {
-            var author = await context.Authors.Include(x => x.Books).SingleOrDefaultAsync(x => x.Name.Contains(name));
+            var author = await context.Authors.SingleOrDefaultAsync(x => x.Name.Contains(name));
             if (author == null) { return NotFound(); }
             return author;
         }

@@ -3,23 +3,12 @@ using WebApiAuthors.Validations;
 
 namespace WebApiAuthors.Entities
 {
-    public class Author : IValidatableObject
+    public class Author
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "Este campo es requerido")]
+        [StringLength(maximumLength: 120, ErrorMessage = "The field {0} should not have more than {1} character")]
+        [FirstCapitalLetter]
         public string Name { get; set; }
-        public List<Book> Books { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (!string.IsNullOrEmpty(Name))
-            {
-                var firstLetter = Name[0].ToString();
-                if (firstLetter != firstLetter.ToUpper())
-                {
-                    yield return new ValidationResult("the first letter must be capital", new string[] { nameof(Name) });
-                }
-            }
-        }
     }
 }
