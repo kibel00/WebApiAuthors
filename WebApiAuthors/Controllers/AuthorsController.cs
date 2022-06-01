@@ -20,32 +20,35 @@ namespace WebApiAuthors.Controllers
             this.logger = logger;
             this.mapper = mapper;
         }
+
         [HttpGet("Autores")]
         [HttpGet("/Autores")]
         [HttpGet]
-        public async Task<ActionResult<List<Author>>> Get()
+        public async Task<ActionResult<List<AuthorDTO>>> Get()
         {
             logger.LogInformation("Getting authors");
-            return await context.Authors.ToListAsync();
+            var authors = await context.Authors.ToListAsync();
+            return mapper.Map<List<AuthorDTO>>(authors);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Author>> Get(int id)
+        public async Task<ActionResult<AuthorDTO>> Get(int id)
         {
-            var author = await context.Authors.SingleOrDefaultAsync(x => x.Id == id);
-            if (author == null)
+            var authors = await context.Authors.SingleOrDefaultAsync(x => x.Id == id);
+            if (authors == null)
             {
                 return NotFound();
             }
-            return author;
+            return mapper.Map<AuthorDTO>(authors);
         }
 
         [HttpGet("{name}")]
-        public async Task<ActionResult<Author>> Get(string name)
+        public async Task<ActionResult<List<AuthorDTO>>> Get(string name)
         {
-            var author = await context.Authors.SingleOrDefaultAsync(x => x.Name.Contains(name));
-            if (author == null) { return NotFound(); }
-            return author;
+            var author = await context.Authors.Where(x => x.Name.Contains(name)).ToListAsync();
+
+
+            return mapper.Map<List<AuthorDTO>>(author);
         }
 
 
