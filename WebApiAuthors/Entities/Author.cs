@@ -10,5 +10,6 @@ namespace WebApiAuthors.Entities
         [StringLength(maximumLength: 120, ErrorMessage = "The field {0} should not have more than {1} character")]
         [FirstCapitalLetter]
         public string Name { get; set; }
+        public List<AuthorBook> AuthorsBooks { get; set; }
     }
 }

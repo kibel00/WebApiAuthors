@@ -35,9 +35,28 @@ namespace WebApiAuthors.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(CreationBookDTO creationBookDTO)
         {
-            //var authorExist = await context.Book.Include(x => x.Author).AnyAsync(x => x.AuthorId == book.AuthorId);
-            //if (!authorExist) { return BadRequest($"No existe el autor del Id igual {book.AuthorId}"); }
+            if (creationBookDTO.AuthorsId == null)
+            {
+                return BadRequest("Cannot create a book without authors");
+            }
+            var authorsId = await context.Authors
+                .Where(authorDb => creationBookDTO.AuthorsId.Contains(authorDb.Id)).Select(x => x.Id).ToListAsync();
+
+            if (creationBookDTO.AuthorsId.Count != authorsId.Count)
+            {
+                return BadRequest("there is no one of the authors sent");
+            }
+
             var book = mapper.Map<Book>(creationBookDTO);
+
+            if (book.AuthorsBooks != null)
+            {
+                for (int i = 0; i < book.AuthorsBooks.Count; i++)
+                {
+                    book.AuthorsBooks[i].Order = i;
+                }
+            }
+
             context.Add(book);
             await context.SaveChangesAsync();
             return Ok(book);
