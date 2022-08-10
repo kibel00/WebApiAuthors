@@ -32,14 +32,16 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<AuthorDTO>> Get(int id)
+        public async Task<ActionResult<AuthorDTOWithBook>> Get(int id)
         {
-            var authors = await context.Authors.SingleOrDefaultAsync(x => x.Id == id);
+            var authors = await context.Authors
+                .Include(authorBookDb => authorBookDb.AuthorsBooks)
+                .ThenInclude(authorDb => authorDb.Book).SingleOrDefaultAsync(x => x.Id == id);
             if (authors == null)
             {
                 return NotFound();
             }
-            return mapper.Map<AuthorDTO>(authors);
+            return mapper.Map<AuthorDTOWithBook>(authors);
         }
 
         [HttpGet("{name}")]

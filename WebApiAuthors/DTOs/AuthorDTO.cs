@@ -1,4 +1,6 @@
-﻿namespace WebApiAuthors.DTOs
+﻿using WebApiAuthors.Entities;
+
+namespace WebApiAuthors.DTOs
 {
     public class AuthorDTO
     {
