@@ -31,19 +31,31 @@ namespace WebApiAuthors.Controllers
             return NotFound();
         }
 
+        [HttpGet("id:int", Name = "GetComment")]
+        public async Task<ActionResult<CommentsDTO>> GetById(int id)
+        {
+            var comment = await context.Comments.FirstOrDefaultAsync(x => x.Id == id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            return mapper.Map<CommentsDTO>(comment);
+        }
+
         [HttpPost]
         public async Task<ActionResult> Post(int bookId, CommentCreationDTO commentCreationDTO)
         {
             var existBook = await context.Book.AnyAsync(x => x.Id == bookId);
-            if (existBook)
+            if (!existBook)
             {
-                var comment = mapper.Map<Comment>(commentCreationDTO);
-                comment.BookId = bookId;
-                context.Add(comment);
-                await context.SaveChangesAsync();
-                return Ok(comment);
+                return NotFound();
             }
-            return NotFound();
+            var comment = mapper.Map<Comment>(commentCreationDTO);
+            comment.BookId = bookId;
+            context.Add(comment);
+            await context.SaveChangesAsync();
+            var commentDTO = mapper.Map<CommentsDTO>(comment);
+            return CreatedAtRoute("GetComment", new { id = comment.Id, bookId = bookId }, commentDTO);
         }
     }
 }
