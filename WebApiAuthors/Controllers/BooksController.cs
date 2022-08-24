@@ -52,14 +52,7 @@ namespace WebApiAuthors.Controllers
             }
 
             var book = mapper.Map<Book>(creationBookDTO);
-
-            if (book.AuthorsBooks != null)
-            {
-                for (int i = 0; i < book.AuthorsBooks.Count; i++)
-                {
-                    book.AuthorsBooks[i].Order = i;
-                }
-            }
+            AssignOrder(book);
 
             context.Add(book);
             await context.SaveChangesAsync();
@@ -69,17 +62,33 @@ namespace WebApiAuthors.Controllers
             return CreatedAtRoute("getBook", new { id = book.Id }, bookDTO);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Book>> Put(Book book, int id)
+        private void AssignOrder(Book book)
         {
-            if (book.Id != id) { return BadRequest("El id del libro no coincide con el id de la url"); }
-            var exist = await context.Book.AnyAsync(x => x.Id == id);
-            if (!exist) { return NotFound(); }
-            context.Update(book);
-            await context.SaveChangesAsync();
-
-            return Ok();
+            if (book.AuthorsBooks != null)
+            {
+                for (int i = 0; i < book.AuthorsBooks.Count; i++)
+                {
+                    book.AuthorsBooks[i].Order = i;
+                }
+            }
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<Book>> Put(int id, CreationBookDTO creationBookDTO)
+        {
+            var bookDb = await context.Book.Include(x => x.AuthorsBooks).FirstOrDefaultAsync(x => x.Id == id);
+            if (bookDb == null) return NotFound();
+
+
+            bookDb = mapper.Map(creationBookDTO, bookDb);
+            AssignOrder(bookDb);
+
+            await context.SaveChangesAsync();
+            return NoContent();
+
+        }
+
+
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
