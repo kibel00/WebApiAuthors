@@ -25,6 +25,8 @@ namespace WebApiAuthors.Controllers
                 .Include(bookDb => bookDb.AuthorsBooks)
                 .ThenInclude(authorBookDb => authorBookDb.Author).FirstOrDefaultAsync(x => x.Id == id);
 
+            if (book == null) return NotFound();
+
 
             book.AuthorsBooks = book.AuthorsBooks.OrderBy(x => x.Order).ToList();
             return mapper.Map<BookDTOWithAuthors>(book);
