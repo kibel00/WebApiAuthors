@@ -17,6 +17,12 @@ namespace WebApiAuthors.Utilities
             CreateMap<Book, BookDTO>();
             CreateMap<Book, BookDTOWithAuthors>()
                 .ForMember(bookDTO => bookDTO.Authors, options => options.MapFrom(MapBookDTOAuthors));
+
+
+            CreateMap<BookPatchDTO, Book>().ReverseMap();
+
+
+
             //Comments
             CreateMap<CommentCreationDTO, Comment>();
             CreateMap<Comment, CommentsDTO>();

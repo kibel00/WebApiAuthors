@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.DTOs;
@@ -94,11 +95,44 @@ namespace WebApiAuthors.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var book = await context.Book.FindAsync(id);
-            if (book == null) { return NotFound(); }
-            context.Remove(book);
+            var book = await context.Book.AnyAsync(x => x.Id == id);
+            if (!book) { return NotFound(); }
+            context.Remove(new Book() { Id = id });
             await context.SaveChangesAsync();
             return Ok();
+        }
+
+
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, JsonPatchDocument<BookPatchDTO> patchDocument)
+        {
+            if (patchDocument == null)
+            {
+                return BadRequest();
+            }
+
+            var bookDb = await context.Book.FirstOrDefaultAsync(x => x.Id == id);
+            if (bookDb == null)
+            {
+                return NotFound();
+            }
+
+            var bookDto = mapper.Map<BookPatchDTO>(bookDb);
+
+            patchDocument.ApplyTo(bookDto, ModelState);
+
+            var isValid = TryValidateModel(bookDto);
+
+            if (!isValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            mapper.Map(bookDto, bookDb);
+            await context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }
