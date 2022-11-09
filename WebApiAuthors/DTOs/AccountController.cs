@@ -12,11 +12,13 @@ namespace WebApiAuthors.DTOs
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
+        private readonly SignInManager<IdentityUser> signInManager;
 
-        public AccountController(UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public AccountController(UserManager<IdentityUser> userManager, IConfiguration configuration, SignInManager<IdentityUser> signInManager)
         {
             this.userManager = userManager;
             this.configuration = configuration;
+            this.signInManager = signInManager;
         }
         [HttpPost("register")]
         public async Task<ActionResult<AnswerAuthentications>> Register(UserCredentials userCredential)
@@ -32,7 +34,19 @@ namespace WebApiAuthors.DTOs
                 return BadRequest(result.Errors);
             }
         }
-
+        [HttpPost("login")]
+        public async Task<ActionResult<AnswerAuthentications>> Login(UserCredentials userCredentials)
+        {
+            var result = await signInManager.PasswordSignInAsync(userCredentials.Email, userCredentials.Password, isPersistent: false, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
+                return BuildToken(userCredentials);
+            }
+            else
+            {
+                return BadRequest("Login incorrecto");
+            }
+        }
 
         private AnswerAuthentications BuildToken(UserCredentials userCredentials)
         {

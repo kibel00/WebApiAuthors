@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 using WebApiAuthors.Filters;
 using WebApiAuthors.Middlewares;
@@ -31,7 +33,15 @@ namespace WebApiAuthors
             services.AddSwaggerGen();
 
             services.AddResponseCaching();
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(option => option.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTkey"])),
+                ClockSkew = TimeSpan.Zero
+            });
 
             services.AddAutoMapper(typeof(Startup));
 
