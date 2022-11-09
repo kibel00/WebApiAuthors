@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -47,6 +49,18 @@ namespace WebApiAuthors.DTOs
                 return BadRequest("Login incorrecto");
             }
         }
+
+        [HttpGet("tokenRenew")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public ActionResult<AnswerAuthentications> ReNew()
+        {
+            var emailClaim = HttpContext.User.Claims.Where(claims => claims.Type == "emai").FirstOrDefault();
+            var email = emailClaim.Value;
+            var userCredentials = new UserCredentials() { Email = email };
+
+            return BuildToken(userCredentials);
+        }
+
 
         private AnswerAuthentications BuildToken(UserCredentials userCredentials)
         {
