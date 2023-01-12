@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using WebApiAuthors.Filters;
 using WebApiAuthors.Middlewares;
+using WebApiAuthors.Services;
 
 namespace WebApiAuthors
 {
@@ -81,6 +82,17 @@ namespace WebApiAuthors
             {
                 options.AddPolicy("IsAdmin", politic => politic.RequireClaim("IsAdmin"));
             });
+
+            //services.AddCors(options =>
+            //{
+            //    options.AddDefaultPolicy(builder =>
+            //    {
+            //        builder.WithOrigins("").AllowAnyMethod().AllowAnyHeader();
+            //    });
+            //});
+
+            services.AddDataProtection();
+            services.AddTransient<HashService>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -96,6 +108,7 @@ namespace WebApiAuthors
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors();
 
             app.UseAuthorization();
 
