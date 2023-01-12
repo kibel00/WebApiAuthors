@@ -29,7 +29,7 @@ namespace WebApiAuthors.DTOs
             var result = await userManager.CreateAsync(user, userCredential.Password);
             if (result.Succeeded)
             {
-                return BuildToken(userCredential);
+                return await BuildToken(userCredential);
             }
             else
             {
@@ -42,7 +42,7 @@ namespace WebApiAuthors.DTOs
             var result = await signInManager.PasswordSignInAsync(userCredentials.Email, userCredentials.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
-                return BuildToken(userCredentials);
+                return await BuildToken(userCredentials);
             }
             else
             {
@@ -52,22 +52,28 @@ namespace WebApiAuthors.DTOs
 
         [HttpGet("tokenRenew")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public ActionResult<AnswerAuthentications> ReNew()
+        public async Task<ActionResult<AnswerAuthentications>> ReNew()
         {
             var emailClaim = HttpContext.User.Claims.Where(claims => claims.Type == "emai").FirstOrDefault();
             var email = emailClaim.Value;
             var userCredentials = new UserCredentials() { Email = email };
 
-            return BuildToken(userCredentials);
+            return await BuildToken(userCredentials);
         }
 
 
-        private AnswerAuthentications BuildToken(UserCredentials userCredentials)
+        private async Task<AnswerAuthentications> BuildToken(UserCredentials userCredentials)
         {
             var claims = new List<Claim>()
             {
                 new Claim("email",userCredentials.Email)
             };
+
+            var user = await userManager.FindByEmailAsync(userCredentials.Email);
+            var claimDb = await userManager.GetClaimsAsync(user);
+
+            claims.AddRange(claimDb);
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWTkey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expiration = DateTime.UtcNow.AddMinutes(20);
@@ -78,6 +84,25 @@ namespace WebApiAuthors.DTOs
                 Token = new JwtSecurityTokenHandler().WriteToken(securityToken),
                 Expiration = expiration
             };
+        }
+
+        [HttpPost("MakeAdmin")]
+        public async Task<ActionResult> MakeAdmin(EditAdminDTO editAdminDTO)
+        {
+            var user = await userManager.FindByEmailAsync(editAdminDTO.Email);
+            await userManager.AddClaimAsync(user, new Claim("IsAdmin", "1"));
+
+            return NoContent();
+        }
+
+
+        [HttpPost("RemoveAdmin")]
+        public async Task<ActionResult> RemoveAdmin(EditAdminDTO editAdminDTO)
+        {
+            var user = await userManager.FindByEmailAsync(editAdminDTO.Email);
+            await userManager.RemoveClaimAsync(user, new Claim("IsAdmin", "1"));
+
+            return NoContent();
         }
     }
 }

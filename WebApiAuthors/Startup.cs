@@ -74,6 +74,13 @@ namespace WebApiAuthors
             services.AddAutoMapper(typeof(Startup));
 
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsAdmin", politic => politic.RequireClaim("IsAdmin"));
+            });
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
