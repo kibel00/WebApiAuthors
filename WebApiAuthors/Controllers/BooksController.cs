@@ -19,7 +19,7 @@ namespace WebApiAuthors.Controllers
             this.context = context;
             this.mapper = mapper;
         }
-        [HttpGet("{id:int}", Name = "getBook")]
+        [HttpGet("{id:int}", Name = "getBookById")]
         public async Task<ActionResult<BookDTOWithAuthors>> Get(int id)
         {
             var book = await context.Book
@@ -33,13 +33,15 @@ namespace WebApiAuthors.Controllers
             return mapper.Map<BookDTOWithAuthors>(book);
         }
 
-        [HttpGet]
+        [HttpGet(Name = "getbook")]
         public async Task<ActionResult<List<BookDTO>>> Get()
         {
             var book = await context.Book.ToListAsync();
             return mapper.Map<List<BookDTO>>(book);
         }
-        [HttpPost]
+
+
+        [HttpPost(Name = "createBook")]
         public async Task<ActionResult> Post(CreationBookDTO creationBookDTO)
         {
             if (creationBookDTO.AuthorsId == null)
@@ -62,7 +64,7 @@ namespace WebApiAuthors.Controllers
 
 
             var bookDTO = mapper.Map<BookDTO>(book);
-            return CreatedAtRoute("getBook", new { id = book.Id }, bookDTO);
+            return CreatedAtRoute("getBookById", new { id = book.Id }, bookDTO);
         }
 
         private void AssignOrder(Book book)
@@ -76,7 +78,7 @@ namespace WebApiAuthors.Controllers
             }
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}", Name = "updateBook")]
         public async Task<ActionResult<Book>> Put(int id, CreationBookDTO creationBookDTO)
         {
             var bookDb = await context.Book.Include(x => x.AuthorsBooks).FirstOrDefaultAsync(x => x.Id == id);
@@ -92,7 +94,7 @@ namespace WebApiAuthors.Controllers
         }
 
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int}", Name = "deleteBook")]
         public async Task<ActionResult> Delete(int id)
         {
             var book = await context.Book.AnyAsync(x => x.Id == id);
@@ -104,7 +106,7 @@ namespace WebApiAuthors.Controllers
 
 
 
-        [HttpPatch("{id:int}")]
+        [HttpPatch("{id:int}", Name = "patchBook")]
         public async Task<ActionResult> Patch(int id, JsonPatchDocument<BookPatchDTO> patchDocument)
         {
             if (patchDocument == null)

@@ -16,26 +16,51 @@ namespace WebApiAuthors.Controllers
         private readonly ApplicationDbContext context;
         private readonly ILogger<AuthorsController> logger;
         private readonly IMapper mapper;
+        private readonly IAuthorizationService authorizationService;
 
-        public AuthorsController(ApplicationDbContext context, ILogger<AuthorsController> logger, IMapper mapper)
+        public AuthorsController(ApplicationDbContext context, ILogger<AuthorsController> logger, IMapper mapper, IAuthorizationService authorizationService)
         {
             this.context = context;
             this.logger = logger;
             this.mapper = mapper;
+            this.authorizationService = authorizationService;
         }
 
-        [HttpGet("Autores")]
-        [HttpGet("/Autores")]
-        [HttpGet]
+        [HttpGet(Name = "getAuthors")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<AuthorDTO>>> Get()
+        public async Task<ActionResult<CollectionResources<AuthorDTO>>> Get()
         {
             logger.LogInformation("Getting authors");
             var authors = await context.Authors.ToListAsync();
-            return mapper.Map<List<AuthorDTO>>(authors);
+            var dto = mapper.Map<List<AuthorDTO>>(authors);
+
+
+            var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
+
+
+
+            dto.ForEach(x => LinkGenerate(x, isAdmin.Succeeded));
+
+            var result = new CollectionResources<AuthorDTO>() { Values = dto };
+            result.Links.Add(new HateOASData(
+                link: Url.Link("getAuthors", new { }),
+                description: "self",
+                method: "GET"));
+
+
+            if (isAdmin.Succeeded)
+            {
+                result.Links.Add(new HateOASData(
+                    link: Url.Link("authorCreate", new { }),
+                    description: "author-create",
+                    method: "POST"));
+            }
+
+            return result;
         }
 
         [HttpGet("{id:int}", Name = "getAuthors")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuthorDTOWithBook>> Get(int id)
         {
             var authors = await context.Authors
@@ -45,10 +70,38 @@ namespace WebApiAuthors.Controllers
             {
                 return NotFound();
             }
-            return mapper.Map<AuthorDTOWithBook>(authors);
+            var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
+
+
+            var dto = mapper.Map<AuthorDTOWithBook>(authors);
+            LinkGenerate(dto, isAdmin.Succeeded);
+            return dto;
         }
 
-        [HttpGet("{name}")]
+
+
+        private void LinkGenerate(AuthorDTO authorDTO, bool isAdmin)
+        {
+            authorDTO.Links.Add(new HateOASData(link: Url.Link("getAuthors", new { id = authorDTO.Id }),
+                                                description: "self",
+                                                method: "GET"));
+
+
+            if (isAdmin)
+            {
+                authorDTO.Links.Add(new HateOASData(link: Url.Link("updateAuthor", new { id = authorDTO.Id }),
+                                                   description: "update-author",
+                                                   method: "PUT"));
+
+
+                authorDTO.Links.Add(new HateOASData(link: Url.Link("deleteAuthor", new { id = authorDTO.Id }),
+                                                   description: "author-delete",
+                                                   method: "DELETE"));
+            }
+
+        }
+
+        [HttpGet("{name}", Name = "getAuthorsByName")]
         public async Task<ActionResult<List<AuthorDTO>>> Get(string name)
         {
             var author = await context.Authors.Where(x => x.Name.Contains(name)).ToListAsync();
@@ -59,7 +112,7 @@ namespace WebApiAuthors.Controllers
 
 
 
-        [HttpPost]
+        [HttpPost(Name = "authorCreate")]
         public async Task<ActionResult> Post(CreationAuthorDTO creationAuthorDTO)
         {
             var exist = await context.Authors.AnyAsync(x => x.Name == creationAuthorDTO.Name);
@@ -76,7 +129,7 @@ namespace WebApiAuthors.Controllers
             return CreatedAtRoute("getAuthors", new { id = authors.Id }, authorDTO);
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}", Name = "updateAuthor")]
         public async Task<ActionResult<Author>> Put(CreationAuthorDTO creationAuthorDTO, int id)
         {
 
@@ -90,7 +143,7 @@ namespace WebApiAuthors.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int}", Name = "deleteAuthor")]
         public async Task<ActionResult> Delete(int id)
         {
             var author = await context.Authors.FindAsync(id);
