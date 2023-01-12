@@ -28,35 +28,37 @@ namespace WebApiAuthors.Controllers
 
         [HttpGet(Name = "getAuthors")]
         [AllowAnonymous]
-        public async Task<ActionResult<CollectionResources<AuthorDTO>>> Get()
+        public async Task<IActionResult> Get([FromQuery] bool includeHatesOAS = true)
         {
             logger.LogInformation("Getting authors");
             var authors = await context.Authors.ToListAsync();
             var dto = mapper.Map<List<AuthorDTO>>(authors);
 
-
-            var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
-
-
-
-            dto.ForEach(x => LinkGenerate(x, isAdmin.Succeeded));
-
-            var result = new CollectionResources<AuthorDTO>() { Values = dto };
-            result.Links.Add(new HateOASData(
-                link: Url.Link("getAuthors", new { }),
-                description: "self",
-                method: "GET"));
-
-
-            if (isAdmin.Succeeded)
+            if (includeHatesOAS)
             {
+                var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
+
+                dto.ForEach(x => LinkGenerate(x, isAdmin.Succeeded));
+
+                var result = new CollectionResources<AuthorDTO>() { Values = dto };
                 result.Links.Add(new HateOASData(
-                    link: Url.Link("authorCreate", new { }),
-                    description: "author-create",
-                    method: "POST"));
+                    link: Url.Link("getAuthors", new { }),
+                    description: "self",
+                    method: "GET"));
+
+
+                if (isAdmin.Succeeded)
+                {
+                    result.Links.Add(new HateOASData(
+                        link: Url.Link("authorCreate", new { }),
+                        description: "author-create",
+                        method: "POST"));
+                }
+                return Ok(result);
             }
 
-            return result;
+
+            return Ok(dto);
         }
 
         [HttpGet("{id:int}", Name = "getAuthors")]
