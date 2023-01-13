@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
+using WebApiAuthors.Utilities;
 
 namespace WebApiAuthors.Controllers
 {
@@ -28,41 +29,17 @@ namespace WebApiAuthors.Controllers
 
         [HttpGet(Name = "getAuthors")]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] bool includeHatesOAS = true)
+        [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
+        public async Task<ActionResult<List<AuthorDTO>>> Get()
         {
             logger.LogInformation("Getting authors");
             var authors = await context.Authors.ToListAsync();
-            var dto = mapper.Map<List<AuthorDTO>>(authors);
-
-            if (includeHatesOAS)
-            {
-                var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
-
-                dto.ForEach(x => LinkGenerate(x, isAdmin.Succeeded));
-
-                var result = new CollectionResources<AuthorDTO>() { Values = dto };
-                result.Links.Add(new HateOASData(
-                    link: Url.Link("getAuthors", new { }),
-                    description: "self",
-                    method: "GET"));
-
-
-                if (isAdmin.Succeeded)
-                {
-                    result.Links.Add(new HateOASData(
-                        link: Url.Link("authorCreate", new { }),
-                        description: "author-create",
-                        method: "POST"));
-                }
-                return Ok(result);
-            }
-
-
-            return Ok(dto);
+            return mapper.Map<List<AuthorDTO>>(authors);
         }
 
-        [HttpGet("{id:int}", Name = "getAuthors")]
+        [HttpGet("{id:int}", Name = "getAuthor")]
         [AllowAnonymous]
+        [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
         public async Task<ActionResult<AuthorDTOWithBook>> Get(int id)
         {
             var authors = await context.Authors
@@ -72,39 +49,14 @@ namespace WebApiAuthors.Controllers
             {
                 return NotFound();
             }
-            var isAdmin = await authorizationService.AuthorizeAsync(User, "isAdmin");
 
 
             var dto = mapper.Map<AuthorDTOWithBook>(authors);
-            LinkGenerate(dto, isAdmin.Succeeded);
             return dto;
         }
 
-
-
-        private void LinkGenerate(AuthorDTO authorDTO, bool isAdmin)
-        {
-            authorDTO.Links.Add(new HateOASData(link: Url.Link("getAuthors", new { id = authorDTO.Id }),
-                                                description: "self",
-                                                method: "GET"));
-
-
-            if (isAdmin)
-            {
-                authorDTO.Links.Add(new HateOASData(link: Url.Link("updateAuthor", new { id = authorDTO.Id }),
-                                                   description: "update-author",
-                                                   method: "PUT"));
-
-
-                authorDTO.Links.Add(new HateOASData(link: Url.Link("deleteAuthor", new { id = authorDTO.Id }),
-                                                   description: "author-delete",
-                                                   method: "DELETE"));
-            }
-
-        }
-
         [HttpGet("{name}", Name = "getAuthorsByName")]
-        public async Task<ActionResult<List<AuthorDTO>>> Get(string name)
+        public async Task<ActionResult<List<AuthorDTO>>> GetByName(string name)
         {
             var author = await context.Authors.Where(x => x.Name.Contains(name)).ToListAsync();
 

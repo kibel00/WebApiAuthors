@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -9,6 +10,7 @@ using System.Text.Json.Serialization;
 using WebApiAuthors.Filters;
 using WebApiAuthors.Middlewares;
 using WebApiAuthors.Services;
+using WebApiAuthors.Utilities;
 
 namespace WebApiAuthors
 {
@@ -37,6 +39,7 @@ namespace WebApiAuthors
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiAuthors", Version = "v1" });
+                c.OperationFilter<AddParameterHATEOAS>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -93,6 +96,9 @@ namespace WebApiAuthors
 
             services.AddDataProtection();
             services.AddTransient<HashService>();
+            services.AddTransient<LinksGenerator>();
+            services.AddTransient<HATESOUASAuthorFilterAttribute>();
+            services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
