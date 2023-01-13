@@ -30,6 +30,7 @@ namespace WebApiAuthors
             services.AddControllers(options =>
             {
                 options.Filters.Add(typeof(ExceptionFilter));
+                options.Conventions.Add(new GroupByVersionSwagger());
             }).AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles).AddNewtonsoftJson();
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,6 +40,7 @@ namespace WebApiAuthors
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiAuthors", Version = "v1" });
+                c.SwaggerDoc("v2", new OpenApiInfo { Title = "WebApiAuthors", Version = "v2" });
                 c.OperationFilter<AddParameterHATEOAS>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -108,7 +110,11 @@ namespace WebApiAuthors
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApiAuthors v1");
+                    c.SwaggerEndpoint("/swagger/v2/swagger.json", "WebApiAuthors v2");
+                });
             }
 
             app.UseHttpsRedirection();

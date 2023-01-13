@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApiAuthors.Services;
 
-namespace WebApiAuthors.Controllers
+namespace WebApiAuthors.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class HashController : ControllerBase
     {
@@ -13,7 +13,7 @@ namespace WebApiAuthors.Controllers
         public HashController(IDataProtectionProvider dataProtectionBuilder, HashService hashService)
         {
             this.hashService = hashService;
-            this.dataProtector = dataProtectionBuilder.CreateProtector("unique_value_and_maybe_secret");
+            dataProtector = dataProtectionBuilder.CreateProtector("unique_value_and_maybe_secret");
         }
         [HttpGet("hasg/{flatText}")]
         public IActionResult MakeHash(string flatText)
@@ -22,9 +22,9 @@ namespace WebApiAuthors.Controllers
             var result2 = hashService.Hash(flatText);
             return Ok(new
             {
-                flatText = flatText,
-                result1 = result1,
-                result2 = result2
+                flatText,
+                result1,
+                result2
             });
         }
 
@@ -37,9 +37,9 @@ namespace WebApiAuthors.Controllers
 
             return Ok(new
             {
-                flatText = flatText,
-                flatProtected = flatProtected,
-                flatUnprotect = flatUnprotect
+                flatText,
+                flatProtected,
+                flatUnprotect
             });
         }
 
@@ -56,9 +56,9 @@ namespace WebApiAuthors.Controllers
 
             return Ok(new
             {
-                flatText = flatText,
-                flatProtected = flatProtected,
-                flatUnprotect = flatUnprotect
+                flatText,
+                flatProtected,
+                flatUnprotect
             });
         }
     }

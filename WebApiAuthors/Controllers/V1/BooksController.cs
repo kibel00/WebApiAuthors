@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
 
-namespace WebApiAuthors.Controllers
+namespace WebApiAuthors.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class BooksController : ControllerBase
     {

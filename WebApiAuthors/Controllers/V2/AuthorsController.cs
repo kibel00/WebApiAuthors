@@ -7,9 +7,9 @@ using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
 using WebApiAuthors.Utilities;
 
-namespace WebApiAuthors.Controllers
+namespace WebApiAuthors.Controllers.V2
 {
-    [Route("api/[controller]")]
+    [Route("api/v2/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class AuthorsController : ControllerBase
@@ -27,17 +27,18 @@ namespace WebApiAuthors.Controllers
             this.authorizationService = authorizationService;
         }
 
-        [HttpGet(Name = "getAuthors")]
+        [HttpGet(Name = "getAuthorsv2")]
         [AllowAnonymous]
         [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
         public async Task<ActionResult<List<AuthorDTO>>> Get()
         {
             logger.LogInformation("Getting authors");
             var authors = await context.Authors.ToListAsync();
+            authors.ForEach(autor => autor.Name = autor.Name.ToUpper());
             return mapper.Map<List<AuthorDTO>>(authors);
         }
 
-        [HttpGet("{id:int}", Name = "getAuthor")]
+        [HttpGet("{id:int}", Name = "getAuthorv2")]
         [AllowAnonymous]
         [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
         public async Task<ActionResult<AuthorDTOWithBook>> Get(int id)
@@ -55,7 +56,7 @@ namespace WebApiAuthors.Controllers
             return dto;
         }
 
-        [HttpGet("{name}", Name = "getAuthorsByName")]
+        [HttpGet("{name}", Name = "getAuthorsByNamev2")]
         public async Task<ActionResult<List<AuthorDTO>>> GetByName(string name)
         {
             var author = await context.Authors.Where(x => x.Name.Contains(name)).ToListAsync();
@@ -66,7 +67,7 @@ namespace WebApiAuthors.Controllers
 
 
 
-        [HttpPost(Name = "authorCreate")]
+        [HttpPost(Name = "authorCreatev2")]
         public async Task<ActionResult> Post(CreationAuthorDTO creationAuthorDTO)
         {
             var exist = await context.Authors.AnyAsync(x => x.Name == creationAuthorDTO.Name);
@@ -83,7 +84,7 @@ namespace WebApiAuthors.Controllers
             return CreatedAtRoute("getAuthors", new { id = authors.Id }, authorDTO);
         }
 
-        [HttpPut("{id:int}", Name = "updateAuthor")]
+        [HttpPut("{id:int}", Name = "updateAuthorv2")]
         public async Task<ActionResult<Author>> Put(CreationAuthorDTO creationAuthorDTO, int id)
         {
 
@@ -97,7 +98,7 @@ namespace WebApiAuthors.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}", Name = "deleteAuthor")]
+        [HttpDelete("{id:int}", Name = "deleteAuthorv2")]
         public async Task<ActionResult> Delete(int id)
         {
             var author = await context.Authors.FindAsync(id);

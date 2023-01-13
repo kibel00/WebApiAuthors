@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
 
-namespace WebApiAuthors.Controllers
+namespace WebApiAuthors.Controllers.V1
 {
-    [Route("api/books/{bookId:int}/[controller]")]
+    [Route("api/v1/books/{bookId:int}/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
     {
@@ -66,7 +66,7 @@ namespace WebApiAuthors.Controllers
             context.Add(comment);
             await context.SaveChangesAsync();
             var commentDTO = mapper.Map<CommentsDTO>(comment);
-            return CreatedAtRoute("getComment", new { id = comment.Id, bookId = bookId }, commentDTO);
+            return CreatedAtRoute("getComment", new { id = comment.Id, bookId }, commentDTO);
         }
 
 
