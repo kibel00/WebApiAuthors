@@ -42,6 +42,8 @@ namespace WebApiAuthors.Controllers.V1
         [HttpGet("{id:int}", Name = "getAuthorv1")]
         [AllowAnonymous]
         [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200)]
         public async Task<ActionResult<AuthorDTOWithBook>> Get(int id)
         {
             var authors = await context.Authors
@@ -99,6 +101,12 @@ namespace WebApiAuthors.Controllers.V1
             return NoContent();
         }
 
+
+        /// <summary>
+        /// Delete a author
+        /// </summary>
+        /// <param name="id">authors id to delete</param>
+        /// <returns></returns>
         [HttpDelete("{id:int}", Name = "deleteAuthorv1")]
         public async Task<ActionResult> Delete(int id)
         {

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using WebApiAuthors.Filters;
@@ -12,6 +14,7 @@ using WebApiAuthors.Middlewares;
 using WebApiAuthors.Services;
 using WebApiAuthors.Utilities;
 
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace WebApiAuthors
 {
     public class Startup
@@ -39,7 +42,20 @@ namespace WebApiAuthors
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiAuthors", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "WebApiAuthors",
+                    Version = "v1",
+                    Description = "This is a web api learned in a course made for Master Felipe Gavilan in udemy (https://www.udemy.com/user/felipegaviln/?src=sac&kw=Felipe+GAvilan)",
+                    Contact = new OpenApiContact()
+                    {
+                        Email = "herrera_payano@outlook.com",
+                        Name = "Santo Herrera",
+                        Url = new Uri("https://localhost:7092/swagger/index.html")
+                    }
+                });
+
+
                 c.SwaggerDoc("v2", new OpenApiInfo { Title = "WebApiAuthors", Version = "v2" });
                 c.OperationFilter<AddParameterHATEOAS>();
                 c.OperationFilter<AddParametersXVersion>();
@@ -65,6 +81,12 @@ namespace WebApiAuthors
                         new string[]{}
                     }
                 });
+
+
+                var fileXml = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var routeXml = Path.Combine(AppContext.BaseDirectory, fileXml);
+
+                c.IncludeXmlComments(routeXml);
             });
 
             services.AddResponseCaching();
