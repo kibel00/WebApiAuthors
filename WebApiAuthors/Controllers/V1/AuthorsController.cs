@@ -11,7 +11,7 @@ namespace WebApiAuthors.Controllers.V1
 {
     [Route("api/[controller]")]
     //[Route("api/v1/[controller]")]
-    [HeadIsPresentedInAttribute("x-version","1")]
+    [HeadIsPresentedInAttribute("x-version", "1")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class AuthorsController : ControllerBase
@@ -32,10 +32,14 @@ namespace WebApiAuthors.Controllers.V1
         [HttpGet(Name = "getAuthorsv1")]
         [AllowAnonymous]
         [ServiceFilter(typeof(HATESOUASAuthorFilterAttribute))]
-        public async Task<ActionResult<List<AuthorDTO>>> Get()
+        public async Task<ActionResult<List<AuthorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
         {
             logger.LogInformation("Getting authors");
-            var authors = await context.Authors.ToListAsync();
+
+            var queryable = context.Authors.AsQueryable();
+
+            await HttpContext.InsertParamtersHeadPagination(queryable);
+            var authors = await queryable.OrderBy(author => author.Name).Paginate(paginationDTO).ToListAsync();
             return mapper.Map<List<AuthorDTO>>(authors);
         }
 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.DTOs;
 using WebApiAuthors.Entities;
+using WebApiAuthors.Utilities;
 
 namespace WebApiAuthors.Controllers.V1
 {
@@ -25,12 +26,14 @@ namespace WebApiAuthors.Controllers.V1
         }
 
         [HttpGet(Name = "getCommentBook")]
-        public async Task<ActionResult<List<CommentsDTO>>> Get(int bookId)
+        public async Task<ActionResult<List<CommentsDTO>>> Get(int bookId, [FromQuery] PaginationDTO paginationDTO)
         {
             var bookExist = await context.Book.AnyAsync(x => x.Id == bookId);
             if (bookExist)
             {
-                var comment = await context.Comments.Where(x => x.BookId == bookId).ToListAsync();
+                var queryable = context.Comments.Where(x => x.BookId == bookId).AsQueryable();
+                await HttpContext.InsertParamtersHeadPagination(queryable);
+                var comment = await queryable.OrderBy(comment => comment.Id).Paginate(paginationDTO).ToListAsync();
                 return mapper.Map<List<CommentsDTO>>(comment);
             }
             return NotFound();

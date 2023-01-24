@@ -111,13 +111,14 @@ namespace WebApiAuthors
                 options.AddPolicy("IsAdmin", politic => politic.RequireClaim("IsAdmin"));
             });
 
-            //services.AddCors(options =>
-            //{
-            //    options.AddDefaultPolicy(builder =>
-            //    {
-            //        builder.WithOrigins("").AllowAnyMethod().AllowAnyHeader();
-            //    });
-            //});
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    //builder.WithOrigins("").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithExposedHeaders(new string[] { "TotalRegistrationAmount" });
+                });
+            });
 
             services.AddDataProtection();
             services.AddTransient<HashService>();
