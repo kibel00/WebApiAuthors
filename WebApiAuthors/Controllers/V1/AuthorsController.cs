@@ -9,7 +9,9 @@ using WebApiAuthors.Utilities;
 
 namespace WebApiAuthors.Controllers.V1
 {
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
+    //[Route("api/v1/[controller]")]
+    [HeadIsPresentedInAttribute("x-version","1")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class AuthorsController : ControllerBase
