@@ -133,13 +133,14 @@ namespace WebApiAuthors
             // Configure the HTTP request pipeline.
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApiAuthors v1");
-                    c.SwaggerEndpoint("/swagger/v2/swagger.json", "WebApiAuthors v2");
-                });
+                app.UseDeveloperExceptionPage();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApiAuthors v1");
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "WebApiAuthors v2");
+            });
 
             app.UseHttpsRedirection();
 
