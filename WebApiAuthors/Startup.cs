@@ -44,7 +44,7 @@ namespace WebApiAuthors
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "WebApiAuthors",
+                    Title = "AuthorsWebApi",
                     Version = "v1",
                     Description = "This is a web api learned in a course made for Master Felipe Gavilan in udemy (https://www.udemy.com/user/felipegaviln/?src=sac&kw=Felipe+GAvilan)",
                     Contact = new OpenApiContact()
@@ -125,6 +125,7 @@ namespace WebApiAuthors
             services.AddTransient<LinksGenerator>();
             services.AddTransient<HATESOUASAuthorFilterAttribute>();
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
+            services.AddApplicationInsightsTelemetry(Configuration["ApplicationInsights:ConnectionString"]);
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
