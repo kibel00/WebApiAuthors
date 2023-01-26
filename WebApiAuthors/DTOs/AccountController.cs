@@ -6,9 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using WebApiAuthors.DTOs;
 
-namespace WebApiAuthors.Controllers.V1
+namespace WebApiAuthors.DTOs
 {
     [ApiController]
     public class AccountController : ControllerBase
